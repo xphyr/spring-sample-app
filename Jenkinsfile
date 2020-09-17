@@ -100,8 +100,8 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject('development') {
-                            def rm = openshift.selector("deploy", templateName).rollout()
-                            openshift.selector("deploy", templateName).related('pods').untilEach(1) {
+                            // def rm = openshift.selector("deploy", templateName).rollout()
+                            openshift.selector("pod", [deployment : "spring-sample-app"]).untilEach(1) {
                                 return (it.object().status.phase == "Running")
                             }
                         }

@@ -1,4 +1,5 @@
-kind: build.openshift.io/v1
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
 metadata:
   name: "jenkins-pipeline3"
 spec:
@@ -43,7 +44,7 @@ spec:
                     steps {
                         script {
                             openshift.withCluster() {
-                                openshift.withProject('mycicd') {
+                                openshift.withProject('cicd') {
                                     echo "Using project: ${openshift.project()}"
                                 }
                             }
@@ -54,7 +55,7 @@ spec:
                     steps {
                         script {
                             openshift.withCluster() {
-                                openshift.withProject('mycicd') {
+                                openshift.withProject('cicd') {
                                     // delete everything with this template label
                                     openshift.selector("all", [ template : templateName ]).delete()
                                     // delete any secrets with this template label
@@ -85,7 +86,7 @@ spec:
                     steps {
                         script {
                             openshift.withCluster() {
-                                openshift.withProject('mycicd') {
+                                openshift.withProject('cicd') {
                                     // create a new application from the templatePath
                                     openshift.newApp(templatePath)
                                 }
@@ -97,7 +98,7 @@ spec:
                     steps {
                         script {
                             openshift.withCluster() {
-                                openshift.withProject('mycicd') {
+                                openshift.withProject('cicd') {
                                     def builds = openshift.selector("bc", templateName).related('builds')
                                     builds.untilEach(1) {
                                         return (it.object().status.phase == "Complete")
@@ -111,7 +112,7 @@ spec:
                     steps {
                         script {
                             openshift.withCluster() {
-                                openshift.withProject('mycicd') {
+                                openshift.withProject('cicd') {
                                     def rm = openshift.selector("dc", templateName).rollout()
                                     openshift.selector("dc", templateName).related('pods').untilEach(1) {
                                         return (it.object().status.phase == "Running")
@@ -125,7 +126,7 @@ spec:
                     steps {
                         script {
                             openshift.withCluster() {
-                                openshift.withProject('mycicd') {
+                                openshift.withProject('cicd') {
                                     // if everything else succeeded, tag the ${templateName}:latest image as ${templateName}-staging:latest
                                     // a pipeline build config for the staging environment can watch for the ${templateName}-staging:latest
                                     // image to change and then deploy it to the staging environment
