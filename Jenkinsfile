@@ -61,6 +61,13 @@ pipeline {
 
 
         stage('create') {
+            when {
+                expression {
+                    openshift.withCluster() {
+                        return !openshift.selector("bc", templateName).exists();
+                    }
+                }
+            }
             steps {
                 script {
                     openshift.withCluster() {
