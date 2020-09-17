@@ -46,25 +46,27 @@ pipeline {
             } // steps
         } // stage
 
-        stage ('input') {
-            input {
-            message "Press Ok to continue"
-            submitter "user1,user2"
-                parameters {
-                string(name:'username', defaultValue: 'user', description: 'Username of the user pressing Ok')
-                            }
-                    }
-            steps { 
-            echo "User: ${username} said Ok."
-                    }
-                        }
+        // stage ('input') {
+        //    input {
+        //    message "Press Ok to continue"
+        //    submitter "user1,user2"
+        //        parameters {
+        //            string(name:'username', defaultValue: 'user', description: 'Username of the user pressing Ok')
+        //        }
+        //    }
+        //    steps { 
+        //        echo "User: ${username} said Ok."
+        //    }
+        //}
 
 
         stage('create') {
             when {
                 expression {
                     openshift.withCluster() {
-                        return !openshift.selector("bc", templateName).exists();
+                        openshift.withProject('development') {
+                            return !openshift.selector("bc", templateName).exists();
+                        }
                     }
                 }
             }
@@ -98,8 +100,8 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject('development') {
-                            def rm = openshift.selector("dc", templateName).rollout()
-                            openshift.selector("dc", templateName).related('pods').untilEach(1) {
+                            def rm = openshift.selector("deploy", templateName).rollout()
+                            openshift.selector("deploy", templateName).related('pods').untilEach(1) {
                                 return (it.object().status.phase == "Running")
                             }
                         }
