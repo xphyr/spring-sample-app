@@ -61,21 +61,26 @@ pipeline {
 
 
         stage('create') {
-            when {
-                expression {
-                    openshift.withCluster() {
-                        openshift.withProject('development') {
-                            return !openshift.selector("bc", templateName).exists();
-                        }
-                    }
-                }
-            }
+            // when {
+            //     expression {
+            //        openshift.withCluster() {
+            //            openshift.withProject('development') {
+            //                return !openshift.selector("bc", templateName).exists();
+            //            }
+            //        }
+            //    }
+            //}
             steps {
                 script {
                     openshift.withCluster() {
                         openshift.withProject('development') {
-                            // create a new application from the templatePath
-                            openshift.newApp(templatePath)
+                            if (openshift.selector("bc", templateName).exists()) {
+                                openshift.selector("bc", templateName).startBuild();
+                            }
+                            else {
+                                // create a new application from the templatePath
+                                openshift.newApp(templatePath);
+                            }
                         }
                     }
                 } // script
