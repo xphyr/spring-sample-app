@@ -63,11 +63,10 @@ pipeline {
         }
 
         stage('Deploy to production'){
+            input {
+                message "Approve to production?"
+            }
             steps {
-                timeout(time: 2, unit: 'DAYS') {
-                    input
-                    message: 'Approve to production?'
-                }
                 script {
                     openshiftTag(namespace: 'development',
   			            sourceStream: 'myapp',
