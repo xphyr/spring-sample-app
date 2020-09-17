@@ -1,71 +1,102 @@
-"node('maven') {
-  stage 'build & deploy in dev'
-  openshiftBuild(namespace: 'development',
-  			    buildConfig: 'myapp',
-			    showBuildLogs: 'true',
-			    waitTime: '3000000')
+pipeline {
+    agent {
+        node{
+            label 'maven'
+        }
+    }
+    
+    stages {
+        stage('build & deploy in dev') {
+            steps {
+                script {
+                    openshiftBuild(namespace: 'development',
+  			            buildConfig: 'myapp',
+			            showBuildLogs: 'true',
+			            waitTime: '3000000')
+                }
+            }
+        }
   
-  stage 'verify deploy in dev'
-
-         openshiftVerifyDeployment(namespace: 'development',
+        stage('verify deploy in dev') {
+            steps {
+                script {
+                    openshiftVerifyDeployment(namespace: 'development',
 				       depCfg: 'myapp',
 				       replicaCount:'1',
 				       verifyReplicaCount: 'true',
 				       waitTime: '300000')
-  
-  stage 'deploy in test'
+                }
+            }
+        }
 
-         openshiftTag(namespace: 'development',
-  			  sourceStream: 'myapp',
-			  sourceTag: 'latest',
-			  destinationStream: 'myapp',
-			  destinationTag: 'promoteQA')
+        stage('deploy in test') {
+            steps {
+                script {
+                    openshiftTag(namespace: 'development',
+  			            sourceStream: 'myapp',
+			            sourceTag: 'latest',
+			            destinationStream: 'myapp',
+			            destinationTag: 'promoteQA')
   
-         openshiftDeploy(namespace: 'testing',
-  			     deploymentConfig:'myapp',
-			     waitTime: '300000')
+                    openshiftDeploy(namespace: 'testing',
+  			            deploymentConfig:'myapp',
+			            waitTime: '300000')
 
-         openshiftScale(namespace: 'testing',
-                 deploymentConfig: 'myapp',
-			     waitTime: '300000',
-			     replicaCount: '2')
-  
-  stage 'verify deploy in test'
+                    openshiftScale(namespace: 'testing',
+                        deploymentConfig: 'myapp',
+			            waitTime: '300000',
+			            replicaCount: '2')
+                }
+            }
+        }
 
-         openshiftVerifyDeployment(namespace: 'testing',
+        stage('verify deploy in test') {
+           steps {
+                script {
+                    openshiftVerifyDeployment(namespace: 'testing',
 				       depCfg: 'myapp',
 				       replicaCount:'2',
 				       verifyReplicaCount: 'true',
 				       waitTime: '300000')
+                }
+           }
+        }
+
+        stage('Deploy to production'){
+            steps {
+                timeout(time: 2, unit: 'DAYS') {
+                    input
+                    message: 'Approve to production?'
+                }
+                script {
+                    openshiftTag(namespace: 'development',
+  			            sourceStream: 'myapp',
+			            sourceTag: 'promoteQA',
+			            destinationStream: 'myapp',
+			            destinationTag: 'promotePRD')
+
+                    openshiftDeploy(namespace: 'production',
+  			            deploymentConfig: 'myapp',
+			            waitTime: '300000')
   
+                    openshiftScale(namespace: 'production',
+  			            deploymentConfig: 'myapp',
+			            waitTime: '300000',
+			            replicaCount: '2')
+                }
+            }
+        }
 
-  stage 'Deploy to production'
-
-  timeout(time: 2, unit: 'DAYS') {
-      input
-        message: 'Approve to production?'
- }
-
-         openshiftTag(namespace: 'development',
-  			  sourceStream: 'myapp',
-			  sourceTag: 'promoteQA',
-			  destinationStream: 'myapp',
-			  destinationTag: 'promotePRD')
-
-         openshiftDeploy(namespace: 'production',
-  			     deploymentConfig: 'myapp',
-			     waitTime: '300000')
-  
-         openshiftScale(namespace: 'production',
-  			     deploymentConfig: 'myapp',
-			     waitTime: '300000',
-			     replicaCount: '2')
-  
-  stage 'verify deploy in production'
-
-         openshiftVerifyDeployment(namespace: 'production',
+        stage('verify deploy in production') {
+            steps {
+                script {
+                    openshiftVerifyDeployment(namespace: 'production',
 				       depCfg: 'myapp',
 				       replicaCount:'2',
 				       verifyReplicaCount: 'true',
 				       waitTime: '300000')
-}"
+                }
+            }
+        }
+    }
+}
