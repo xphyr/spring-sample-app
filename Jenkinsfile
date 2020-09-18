@@ -128,7 +128,7 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject('testing') {
-                            openshift.newApp("${templateName}-staging:latest").narrow('svc').expose()
+                            openshift.newApp("image-registry.openshift-image-registry.svc:5000/development/${templateName}-staging:latest").narrow('svc').expose()
                         }
                     }
                 }
