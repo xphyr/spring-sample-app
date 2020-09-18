@@ -96,9 +96,9 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject('development') {
-                            openshift.tag("${templateName}:latest", "${templateName}-staging:latest")
-                        }
+                        // openshift.withProject('development') {
+                            openshift.tag("development/${templateName}:latest", "testing/${templateName}-staging:latest")
+                        // }
                     }
                 } // script
             } // steps
@@ -117,7 +117,7 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject('testing') {
-                            openshift.newApp("image-registry.openshift-image-registry.svc:5000/development/${templateName}-staging:latest").narrow('svc').expose()
+                            openshift.newApp("${templateName}-staging:latest").narrow('svc').expose()
                         }
                     }
                 }
@@ -146,9 +146,9 @@ pipeline {
             steps {
                 script {
                     openshift.withCluster() {
-                        openshift.withProject('development') {
-                            openshift.tag("${templateName}:latest", "${templateName}-production:latest")
-                        }
+                        // openshift.withProject('development') {
+                            openshift.tag("development/${templateName}:latest", "production/${templateName}-production:latest")
+                        // }
                     }
                 } // script
             } // steps
@@ -167,7 +167,7 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject('production') {
-                            openshift.newApp("image-registry.openshift-image-registry.svc:5000/development/${templateName}-production:latest").narrow('svc').expose()
+                            openshift.newApp("${templateName}-production:latest").narrow('svc').expose()
                         }
                     }
                 }
