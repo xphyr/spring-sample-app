@@ -65,7 +65,7 @@ pipeline {
                             }
                             else {
                                 // create a new application from the templatePath
-                                openshift.newApp(templatePath);
+                                openshift.newApp(templatePath).narrow('svc').expose();
                             }
                         }
                     }
@@ -100,7 +100,7 @@ pipeline {
                 } // script
             } // steps
         } // stage
-        stage('tag') {
+        stage('Tag for Staging') {
             steps {
                 script {
                     openshift.withCluster() {
@@ -114,18 +114,39 @@ pipeline {
                 } // script
             } // steps
         } // stage
-        // stage ('Promote to Prod') {
-        //    input {
-        //    message "Press Ok to continue"
-        //    submitter "user1,user2"
-        //        parameters {
-        //            string(name:'username', defaultValue: 'user', description: 'Username of the user pressing Ok')
-        //        }
-        //    }
-        //    steps { 
-        //        echo "User: ${username} said Ok."
-        //    }
-        //}
-
+        stage ('Create Testing Deployment') {
+            when {
+                expression {
+                    openshift.withCluster() {
+                        openshift.withProject('testing') {
+                            return !openshift.selector("pod", [deployment : "spring-sample-app"]).exists()
+                        }
+                    }
+                }
+            }
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject('testing') {
+                            openshift.newApp("${templateName}-staging:latest").narrow('svc').expose()
+                        }
+                    }
+                }
+            }
+        }
+        stage('Validate Staging') {
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject('testing') {
+                            // def rm = openshift.selector("deploy", templateName).rollout()
+                            openshift.selector("pod", [deployment : "spring-sample-app"]).untilEach(1) {
+                                return (it.object().status.phase == "Running")
+                            }
+                        }
+                    }
+                } // script
+            } // steps
+        } // stage
     } // stages
 } // pipeline
