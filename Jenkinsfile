@@ -47,15 +47,6 @@ pipeline {
         } // stage
 
         stage('create') {
-            // when {
-            //     expression {
-            //        openshift.withCluster() {
-            //            openshift.withProject('development') {
-            //                return !openshift.selector("bc", templateName).exists();
-            //            }
-            //        }
-            //    }
-            //}
             steps {
                 script {
                     openshift.withCluster() {
@@ -100,14 +91,12 @@ pipeline {
                 } // script
             } // steps
         } // stage
+        ///* - we will remove this later
         stage('Tag for Staging') {
             steps {
                 script {
                     openshift.withCluster() {
                         openshift.withProject('development') {
-                            // if everything else succeeded, tag the ${templateName}:latest image as ${templateName}-staging:latest
-                            // a pipeline build config for the staging environment can watch for the ${templateName}-staging:latest
-                            // image to change and then deploy it to the staging environment
                             openshift.tag("${templateName}:latest", "${templateName}-staging:latest")
                         }
                     }
@@ -158,9 +147,6 @@ pipeline {
                 script {
                     openshift.withCluster() {
                         openshift.withProject('development') {
-                            // if everything else succeeded, tag the ${templateName}:latest image as ${templateName}-staging:latest
-                            // a pipeline build config for the staging environment can watch for the ${templateName}-staging:latest
-                            // image to change and then deploy it to the staging environment
                             openshift.tag("${templateName}:latest", "${templateName}-production:latest")
                         }
                     }
@@ -201,6 +187,6 @@ pipeline {
                 } // script
             } // steps
         } // stage
-
+        // we will remove this line later */
     } // stages
 } // pipeline

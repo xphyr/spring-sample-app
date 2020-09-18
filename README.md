@@ -104,3 +104,12 @@ Now that we have a build pipeline set up, lets make a small change to the applic
 In your favorite editor, open src/main/java/com/example/SpringSampleAppApplication.java and edit line 44 replacing "Hello World" with "Hello Galaxy" (or whatever astronomical unit you wish to use) and save the file.
 
 Go ahead and commit this change to your repo `git commit -am "updating source" && git push` and then open your jenkins build pipeline and watch. Within 5 minutes a new build should kick off and your application will be updated. When the build completes refresh your application web page and see that the message has been updated.
+
+### Bringing it all together
+
+So now we have a pipeline that will watch for code changes and promote those changes in to our Development deployment, but what if we want to take this further? We can make this a multi-stage pipeline, promoting the code into a Staging environment, and finally after human approval, into Production. 
+
+Edit your Jenkins file and remove two lines from the file (lines 94 and 190):
+* "    /* - we will remove this later"
+* "        we will remove this line later */"
+this will enable the additional build stages, commit this code to your rep and watch your Jenkins job.
