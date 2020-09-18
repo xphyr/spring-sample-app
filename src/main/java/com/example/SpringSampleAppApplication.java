@@ -41,7 +41,7 @@ class HomeRestController {
     String hostname="";
 	public  HomeRestController(){
 		try {
-			hostname= "Hello Galaxy from " + InetAddress.getLocalHost().getHostName().toString();
+			hostname= "Hello World from " + InetAddress.getLocalHost().getHostName().toString();
 		}
 		catch (UnknownHostException ex){
 			hostname= "error";

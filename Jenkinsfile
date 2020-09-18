@@ -46,20 +46,6 @@ pipeline {
             } // steps
         } // stage
 
-        // stage ('input') {
-        //    input {
-        //    message "Press Ok to continue"
-        //    submitter "user1,user2"
-        //        parameters {
-        //            string(name:'username', defaultValue: 'user', description: 'Username of the user pressing Ok')
-        //        }
-        //    }
-        //    steps { 
-        //        echo "User: ${username} said Ok."
-        //    }
-        //}
-
-
         stage('create') {
             // when {
             //     expression {
@@ -128,5 +114,18 @@ pipeline {
                 } // script
             } // steps
         } // stage
+        // stage ('Promote to Prod') {
+        //    input {
+        //    message "Press Ok to continue"
+        //    submitter "user1,user2"
+        //        parameters {
+        //            string(name:'username', defaultValue: 'user', description: 'Username of the user pressing Ok')
+        //        }
+        //    }
+        //    steps { 
+        //        echo "User: ${username} said Ok."
+        //    }
+        //}
+
     } // stages
 } // pipeline
