@@ -92,7 +92,7 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject('development') {
                             // def rm = openshift.selector("deploy", templateName).rollout()
-                            openshift.selector("pod", [deployment : "spring-sample-app"]).untilEach(1) {
+                            openshift.selector("pod", [deployment : "${templateName}"]).untilEach(1) {
                                 return (it.object().status.phase == "Running")
                             }
                         }
@@ -119,7 +119,7 @@ pipeline {
                 expression {
                     openshift.withCluster() {
                         openshift.withProject('testing') {
-                            return !openshift.selector("pod", [deployment : "spring-sample-app"]).exists()
+                            return !openshift.selector("pod", [deployment : "${templateName}-staging"]).exists()
                         }
                     }
                 }
@@ -140,7 +140,7 @@ pipeline {
                     openshift.withCluster() {
                         openshift.withProject('testing') {
                             // def rm = openshift.selector("deploy", templateName).rollout()
-                            openshift.selector("pod", [deployment : "spring-sample-app"]).untilEach(1) {
+                            openshift.selector("pod", [deployment : "${templateName}-staging"]).untilEach(1) {
                                 return (it.object().status.phase == "Running")
                             }
                         }
@@ -148,5 +148,59 @@ pipeline {
                 } // script
             } // steps
         } // stage
+        stage('Promote to Production') {
+            steps {
+                input "Shal we promote to production"
+            }
+        }
+        stage('Tag for Promotion') {
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject('development') {
+                            // if everything else succeeded, tag the ${templateName}:latest image as ${templateName}-staging:latest
+                            // a pipeline build config for the staging environment can watch for the ${templateName}-staging:latest
+                            // image to change and then deploy it to the staging environment
+                            openshift.tag("${templateName}:latest", "${templateName}-production:latest")
+                        }
+                    }
+                } // script
+            } // steps
+        } // stage
+        stage ('Create Production Deployment') {
+            when {
+                expression {
+                    openshift.withCluster() {
+                        openshift.withProject('production') {
+                            return !openshift.selector("pod", [deployment : "${templateName}-production"]).exists()
+                        }
+                    }
+                }
+            }
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject('production') {
+                            openshift.newApp("image-registry.openshift-image-registry.svc:5000/development/${templateName}-production:latest").narrow('svc').expose()
+                        }
+                    }
+                }
+            }
+        }
+        stage('Validate Production') {
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject('production') {
+                            // def rm = openshift.selector("deploy", templateName).rollout()
+                            openshift.selector("pod", [deployment : "${templateName}-production"]).untilEach(1) {
+                                return (it.object().status.phase == "Running")
+                            }
+                        }
+                    }
+                } // script
+            } // steps
+        } // stage
+
     } // stages
 } // pipeline
