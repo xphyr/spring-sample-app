@@ -91,7 +91,7 @@ pipeline {
                 } // script
             } // steps
         } // stage
-        ///* - we will remove this later
+        /* - we will remove this later
         stage('Tag for Staging') {
             steps {
                 script {
@@ -187,6 +187,6 @@ pipeline {
                 } // script
             } // steps
         } // stage
-        // we will remove this line later */
+        we will remove this line later */
     } // stages
 } // pipeline

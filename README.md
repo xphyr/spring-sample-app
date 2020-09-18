@@ -112,4 +112,15 @@ So now we have a pipeline that will watch for code changes and promote those cha
 Edit your Jenkins file and remove two lines from the file (lines 94 and 190):
 * "    /* - we will remove this later"
 * "        we will remove this line later */"
-this will enable the additional build stages, commit this code to your rep and watch your Jenkins job.
+this will enable the additional build stages, commit this code to your rep and watch your Jenkins job. Go ahead and commit your changes to the Jenkins file and push to github. Log into Jenkins and follow along as you have two new build stages.  Note that the pipeline will pause at the "Promote to Production" stage, looking for approval from you to push the code to production. Click approve and let the pipeline finish.
+
+As part of the pipeline we create a staging route and a production route, go get each of these routes and open in new windows:
+
+```
+oc project testing
+oc get route
+oc project production
+oc get route
+```
+
+For each route you got above you should now see a web page for "Staging" and one for "Production".  Go ahead and change the message in src/main/java/com/example/SpringSampleAppApplication.java one more time and commit/push your change and check to see that the change is propigated all the way through your new pipeline.
